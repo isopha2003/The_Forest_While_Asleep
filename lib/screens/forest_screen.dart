@@ -9,6 +9,7 @@ import '../widgets/tree_widget.dart';
 import '../widgets/animal_popup.dart';
 import '../widgets/dew_popup.dart';
 import '../screens/collection_screen.dart';
+import '../services/notification_service.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -58,6 +59,10 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
 
     // 동물 이슬 보상
     if (animals.isNotEmpty) {
+      NotificationService.showAnimalVisitNotification(
+    animalName: animals.first.name,
+    animalEmoji: animals.first.emoji,
+  );
       final totalDew = animals.fold(0, (sum, a) => sum + a.dewReward);
       Future.delayed(const Duration(milliseconds: 500), () {
         setState(() {
@@ -81,6 +86,9 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
 
   void _onTreeGrow() {
     setState(() => _showGrowMessage = true);
+    NotificationService.showTreeGrowNotification(
+      stageName: _forestState.stageName,
+    );
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => _showGrowMessage = false);
     });
