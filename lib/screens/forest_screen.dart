@@ -8,6 +8,7 @@ import '../services/animal_service.dart';
 import '../widgets/tree_widget.dart';
 import '../widgets/animal_popup.dart';
 import '../widgets/dew_popup.dart';
+import '../screens/collection_screen.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -186,6 +187,21 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
                       style: TextStyle(color: Colors.white70),
                     ),
                   ),
+                  // 도감 버튼
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CollectionScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      '📖 동물 도감',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ),                  
                 ],
               ),
             ),
