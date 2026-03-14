@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/forest_state.dart';
 import '../services/time_service.dart';
 import '../services/weather_service.dart';
+import '../widgets/tree_widget.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -15,6 +16,7 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
   ForestState _forestState = ForestState.initial();
   WeatherType _weatherType = WeatherType.sunny;
   bool _isLoading = true;
+  bool _showGrowMessage = false;
 
   @override
   void initState() {
@@ -31,6 +33,13 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       _forestState = _forestState.applyElapsedTime(elapsed);
       _weatherType = weather;
       _isLoading = false;
+    });
+  }
+
+  void _onTreeGrow() {
+    setState(() => _showGrowMessage = true);
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _showGrowMessage = false);
     });
   }
 
@@ -62,12 +71,26 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-              // 나무 이모지
-              Text(
-                _getTreeEmoji(),
-                style: const TextStyle(fontSize: 100),
+              // 나무 애니메이션 위젯
+              TreeWidget(
+                stage: _forestState.treeStage,
+                onGrow: _onTreeGrow,
               ),
               const SizedBox(height: 24),
+              // 성장 메시지
+              AnimatedOpacity(
+                opacity: _showGrowMessage ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 500),
+                child: const Text(
+                  '🎉 나무가 성장했어요!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
               // 성장 단계
               Text(
                 _forestState.stageName,
@@ -100,10 +123,5 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
         ),
       ),
     );
-  }
-
-  String _getTreeEmoji() {
-    const emojis = ['🌱', '🌿', '🌳', '🌲', '🌴'];
-    return emojis[_forestState.treeStage];
   }
 }
