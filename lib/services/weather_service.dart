@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 enum WeatherType { sunny, rainy, snowy, foggy, thunderstorm, clearNight, unknown }
 
 class WeatherService {
-  static const String _apiKey = '여기에_API_키_입력';
+  static const String _apiKey = '0f9ad78ba4779ce5da9e31c248c55783';
   static const String _baseUrl = 'https://api.openweathermap.org/data/2.5/weather';
 
   // 현재 위치 가져오기

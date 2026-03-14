@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/forest_state.dart';
 import '../services/time_service.dart';
+import '../services/weather_service.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -12,6 +13,7 @@ class ForestScreen extends ConsumerStatefulWidget {
 
 class _ForestScreenState extends ConsumerState<ForestScreen> {
   ForestState _forestState = ForestState.initial();
+  WeatherType _weatherType = WeatherType.sunny;
   bool _isLoading = true;
 
   @override
@@ -23,9 +25,11 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
   Future<void> _loadForest() async {
     final elapsed = await TimeService.getElapsedMinutes();
     await TimeService.saveCloseTime();
+    final weather = await WeatherService.getWeatherType();
 
     setState(() {
       _forestState = _forestState.applyElapsedTime(elapsed);
+      _weatherType = weather;
       _isLoading = false;
     });
   }
@@ -39,20 +43,32 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       );
     }
 
+    final bgColor = Color(WeatherService.getBackgroundColor(_weatherType));
+    final weatherDesc = WeatherService.getWeatherDescription(_weatherType);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF1B4332),
+      backgroundColor: bgColor,
       body: SafeArea(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 나무 성장 단계 이모지
+              // 날씨 설명
+              Text(
+                weatherDesc,
+                style: const TextStyle(
+                  color: Color(0xFF95D5B2),
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 32),
+              // 나무 이모지
               Text(
                 _getTreeEmoji(),
                 style: const TextStyle(fontSize: 100),
               ),
               const SizedBox(height: 24),
-              // 성장 단계 이름
+              // 성장 단계
               Text(
                 _forestState.stageName,
                 style: const TextStyle(
@@ -68,6 +84,15 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
                 style: const TextStyle(
                   color: Color(0xFF95D5B2),
                   fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 40),
+              // 날씨 새로고침 버튼
+              TextButton(
+                onPressed: _loadForest,
+                child: const Text(
+                  '날씨 새로고침',
+                  style: TextStyle(color: Colors.white70),
                 ),
               ),
             ],
