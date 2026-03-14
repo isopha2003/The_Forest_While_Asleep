@@ -11,8 +11,11 @@ class NotificationService {
       settings,
       onDidReceiveNotificationResponse: (NotificationResponse r) {},
     );
-  }
 
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.requestNotificationsPermission();
+  }
   static Future<void> showAnimalVisitNotification({
     required String animalName,
     required String animalEmoji,

@@ -34,6 +34,7 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
   }
 
   Future<void> _loadForest() async {
+    print('=== _loadForest 호출됨 ===');
     final elapsed = await TimeService.getElapsedMinutes();
     await TimeService.saveCloseTime();
     final weather = await WeatherService.getWeatherType();
@@ -60,9 +61,9 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
     // 동물 이슬 보상
     if (animals.isNotEmpty) {
       NotificationService.showAnimalVisitNotification(
-    animalName: animals.first.name,
-    animalEmoji: animals.first.emoji,
-  );
+          animalName: animals.first.name,
+          animalEmoji: animals.first.emoji,
+        );
       final totalDew = animals.fold(0, (sum, a) => sum + a.dewReward);
       Future.delayed(const Duration(milliseconds: 500), () {
         setState(() {
