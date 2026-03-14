@@ -7,6 +7,7 @@ import '../services/weather_service.dart';
 import '../services/animal_service.dart';
 import '../widgets/tree_widget.dart';
 import '../widgets/animal_popup.dart';
+import '../widgets/dew_popup.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -21,6 +22,8 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
   bool _isLoading = true;
   bool _showGrowMessage = false;
   List<Animal> _visitingAnimals = [];
+  int _dewPopupAmount = 0;
+  bool _showDewPopup = false;
 
   @override
   void initState() {
@@ -37,6 +40,9 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       weatherType: weather,
     );
 
+    // 오프라인 이슬 계산
+    final offlineDew = elapsed ~/ 60;
+
     setState(() {
       _forestState = _forestState.applyElapsedTime(elapsed);
       _weatherType = weather;
@@ -44,17 +50,32 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       _isLoading = false;
     });
 
-    // 이슬 보상 적용
+    // 오프라인 이슬 팝업
+    if (offlineDew > 0) {
+      _showDew(offlineDew);
+    }
+
+    // 동물 이슬 보상
     if (animals.isNotEmpty) {
       final totalDew = animals.fold(0, (sum, a) => sum + a.dewReward);
-      setState(() {
-        _forestState = ForestState(
-          treeStage: _forestState.treeStage,
-          dewAmount: _forestState.dewAmount + totalDew,
-          lastSaved: _forestState.lastSaved,
-        );
+      Future.delayed(const Duration(milliseconds: 500), () {
+        setState(() {
+          _forestState = ForestState(
+            treeStage: _forestState.treeStage,
+            dewAmount: _forestState.dewAmount + totalDew,
+            lastSaved: _forestState.lastSaved,
+          );
+        });
+        _showDew(totalDew);
       });
     }
+  }
+
+  void _showDew(int amount) {
+    setState(() {
+      _dewPopupAmount = amount;
+      _showDewPopup = true;
+    });
   }
 
   void _onTreeGrow() {
@@ -128,12 +149,32 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // 이슬 보유량
-                  Text(
-                    '이슬 ${_forestState.dewAmount}개',
-                    style: const TextStyle(
-                      color: Color(0xFF95D5B2),
-                      fontSize: 18,
+                  // 이슬 보유량 (탭하면 이슬 팝업 테스트)
+                  GestureDetector(
+                    onTap: () => _showDew(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white10,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('💧', style: TextStyle(fontSize: 18)),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${_forestState.dewAmount}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -149,6 +190,23 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
               ),
             ),
           ),
+          // 이슬 획득 팝업
+          if (_showDewPopup)
+            Positioned(
+              bottom: 200,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: DewPopup(
+                  amount: _dewPopupAmount,
+                  onComplete: () {
+                    if (mounted) {
+                      setState(() => _showDewPopup = false);
+                    }
+                  },
+                ),
+              ),
+            ),
           // 동물 방문 팝업
           if (_visitingAnimals.isNotEmpty)
             AnimalPopup(
