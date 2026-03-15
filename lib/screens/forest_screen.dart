@@ -18,6 +18,7 @@ import '../screens/settings_screen.dart';
 import '../services/retention_service.dart';
 import '../widgets/check_in_popup.dart';
 import '../screens/scoreboard_screen.dart';
+import '../services/season_service.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -27,6 +28,7 @@ class ForestScreen extends ConsumerStatefulWidget {
 }
 
 class _ForestScreenState extends ConsumerState<ForestScreen> {
+  Season _currentSeason = SeasonService.getCurrentSeason();
   bool _showCheckInPopup = false;
   int _checkInStreak = 0;
   int _checkInDewReward = 0;
@@ -175,6 +177,15 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // 계절 표시
+                  Text(
+                    '${SeasonService.getSeasonEmoji(_currentSeason)} ${SeasonService.getSeasonName(_currentSeason)}',
+                    style: const TextStyle(
+                      color: Colors.white54,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),                  
                   // 날씨 설명
                   Text(
                     weatherDesc,
