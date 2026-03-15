@@ -15,6 +15,9 @@ import '../models/grid_state.dart';
 import '../screens/grid_screen.dart';
 import '../screens/shop_screen.dart';
 import '../screens/settings_screen.dart';
+import '../services/retention_service.dart';
+import '../widgets/check_in_popup.dart';
+import '../screens/scoreboard_screen.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -24,6 +27,9 @@ class ForestScreen extends ConsumerStatefulWidget {
 }
 
 class _ForestScreenState extends ConsumerState<ForestScreen> {
+  bool _showCheckInPopup = false;
+  int _checkInStreak = 0;
+  int _checkInDewReward = 0;
   GridState _gridState = GridState.initial();
   ForestState _forestState = ForestState.initial();
   WeatherType _weatherType = WeatherType.sunny;
@@ -54,11 +60,11 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       );
     }
 
-// 그리드 데이터 불러오기 추가
-final savedGrid = await FirestoreService.loadGridData();
-if (savedGrid != null) {
-  _gridState = GridState.fromMap(savedGrid);
-}
+    // 그리드 데이터 불러오기 추가
+    final savedGrid = await FirestoreService.loadGridData();
+    if (savedGrid != null) {
+      _gridState = GridState.fromMap(savedGrid);
+    }
 
     final elapsed = await TimeService.getElapsedMinutes();
     await TimeService.saveCloseTime();
@@ -107,6 +113,21 @@ if (savedGrid != null) {
           );
         });
         _showDew(totalDew);
+      });
+    }
+    // 출석 체크
+    final canCheckIn = await RetentionService.canCheckIn();
+    if (canCheckIn) {
+      final result = await RetentionService.checkIn();
+      setState(() {
+        _checkInStreak = result['streak'] ?? 1;
+        _checkInDewReward = result['dewReward'] ?? 10;
+        _forestState = ForestState(
+          treeStage: _forestState.treeStage,
+          dewAmount: _forestState.dewAmount + (result['dewReward'] ?? 10),
+          lastSaved: _forestState.lastSaved,
+        );
+        _showCheckInPopup = true;
       });
     }
   }
@@ -302,6 +323,22 @@ if (savedGrid != null) {
                       '⚙️ 설정',
                       style: TextStyle(color: Colors.white70),
                     ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ScoreboardScreen(
+                            forestState: _forestState,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      '🏆 내 기록',
+                      style: TextStyle(color: Colors.white70),
+                    ),
                   ),                   
                 ],
               ),
@@ -330,6 +367,13 @@ if (savedGrid != null) {
               animals: _visitingAnimals,
               onClose: _closeAnimalPopup,
             ),
+          // 출석 체크 팝업
+          if (_showCheckInPopup)
+            CheckInPopup(
+              streak: _checkInStreak,
+              dewReward: _checkInDewReward,
+              onClose: () => setState(() => _showCheckInPopup = false),
+            ),        
         ],
       ),
     );
