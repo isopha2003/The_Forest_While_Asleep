@@ -1,3 +1,5 @@
+import '../services/season_service.dart';
+
 class ForestState {
   final int treeStage;      // 나무 성장 단계 (0~4)
   final int dewAmount;      // 보유 이슬 양
@@ -11,9 +13,12 @@ class ForestState {
 
   // 경과 시간(분)에 따라 성장 단계 계산
   ForestState applyElapsedTime(int elapsedMinutes) {
-    // 1단계당 24시간(1440분) 필요
-    int newStage = (treeStage + (elapsedMinutes ~/ 1440)).clamp(0, 4);
-    int newDew = dewAmount + (elapsedMinutes ~/ 60); // 1시간마다 이슬 +1
+    final season = SeasonService.getCurrentSeason();
+    final multiplier = SeasonService.getGrowthMultiplier(season);
+    final adjustedMinutes = (elapsedMinutes * multiplier).toInt();
+
+    int newStage = (treeStage + (adjustedMinutes ~/ 1440)).clamp(0, 4);
+    int newDew = dewAmount + (elapsedMinutes ~/ 60);
 
     return ForestState(
       treeStage: newStage,
