@@ -1,24 +1,24 @@
 enum TileType { empty, tree, pond, rock, flower }
 
-class GridTile {
+class ForestTitle {
   final int index;
   final TileType type;
   final bool isUnlocked;
   final int? treeStage;
 
-  const GridTile({
+  const ForestTitle({
     required this.index,
     required this.type,
     required this.isUnlocked,
     this.treeStage,
   });
 
-  GridTile copyWith({
+  ForestTitle copyWith({
     TileType? type,
     bool? isUnlocked,
     int? treeStage,
   }) {
-    return GridTile(
+    return ForestTitle(
       index: index,
       type: type ?? this.type,
       isUnlocked: isUnlocked ?? this.isUnlocked,
@@ -33,7 +33,7 @@ class GridTile {
     'treeStage': treeStage,
   };
 
-  factory GridTile.fromMap(Map map) => GridTile(
+  factory ForestTitle.fromMap(Map map) => ForestTitle(
     index: map['index'] ?? 0,
     type: TileType.values.firstWhere(
       (e) => e.name == map['type'],
@@ -45,7 +45,7 @@ class GridTile {
 }
 
 class GridState {
-  final List<GridTile> tiles;
+  final List<ForestTitle> tiles;
   final int gridSize; // 현재 그리드 크기 (3~6)
 
   const GridState({
@@ -60,7 +60,7 @@ class GridState {
       final col = i % 6;
       // 초기 3x3 영역 (row 0~2, col 0~2)
       final isUnlocked = row < 3 && col < 3;
-      return GridTile(
+      return ForestTitle(
         index: i,
         type: TileType.empty,
         isUnlocked: isUnlocked,
@@ -80,7 +80,7 @@ class GridState {
 
   // 특정 칸에 나무 심기
   GridState plantTree(int index) {
-    final newTiles = List<GridTile>.from(tiles);
+    final newTiles = List<ForestTitle>.from(tiles);
     newTiles[index] = tiles[index].copyWith(
       type: TileType.tree,
       treeStage: 0,
@@ -90,7 +90,7 @@ class GridState {
 
   // 특정 칸 잠금 해제
   GridState unlockTile(int index) {
-    final newTiles = List<GridTile>.from(tiles);
+    final newTiles = List<ForestTitle>.from(tiles);
     newTiles[index] = tiles[index].copyWith(isUnlocked: true);
     return GridState(tiles: newTiles, gridSize: gridSize);
   }
@@ -99,7 +99,7 @@ class GridState {
       tiles.map((t) => t.toMap()).toList();
 
   factory GridState.fromMap(List maps) {
-    final tiles = maps.map((m) => GridTile.fromMap(m)).toList();
+    final tiles = maps.map((m) => ForestTitle.fromMap(m)).toList();
     return GridState(tiles: tiles, gridSize: 3);
   }
 }

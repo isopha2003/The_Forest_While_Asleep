@@ -11,6 +11,8 @@ import '../widgets/dew_popup.dart';
 import '../screens/collection_screen.dart';
 import '../services/notification_service.dart';
 import '../services/firestore_service.dart';
+import '../models/grid_state.dart';
+import '../screens/grid_screen.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -20,6 +22,7 @@ class ForestScreen extends ConsumerStatefulWidget {
 }
 
 class _ForestScreenState extends ConsumerState<ForestScreen> {
+  GridState _gridState = GridState.initial();
   ForestState _forestState = ForestState.initial();
   WeatherType _weatherType = WeatherType.sunny;
   bool _isLoading = true;
@@ -229,6 +232,35 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
                     },
                     child: const Text(
                       '📖 동물 도감',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => GridScreen(
+                            forestState: _forestState,
+                            gridState: _gridState,
+                            onGridChanged: (newGrid) {
+                              setState(() => _gridState = newGrid);
+                            },
+                            onDewSpent: (amount) {
+                              setState(() {
+                                _forestState = ForestState(
+                                  treeStage: _forestState.treeStage,
+                                  dewAmount: _forestState.dewAmount - amount,
+                                  lastSaved: _forestState.lastSaved,
+                                );
+                              });
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      '🌲 내 숲 보기',
                       style: TextStyle(color: Colors.white70),
                     ),
                   ),                  
