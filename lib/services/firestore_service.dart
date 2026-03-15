@@ -62,4 +62,29 @@ class FirestoreService {
       print('Firestore 업데이트 오류: $e');
     }
   }
+  // 그리드 데이터 저장
+  static Future<void> saveGridData(List<Map<String, dynamic>> tiles) async {
+    try {
+      await _db.collection(_collection).doc(_docId).update({
+        'gridTiles': tiles,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Firestore 그리드 저장 오류: $e');
+    }
+  }
+
+  // 그리드 데이터 불러오기
+  static Future<List<Map<String, dynamic>>?> loadGridData() async {
+    try {
+      final doc = await _db.collection(_collection).doc(_docId).get();
+      if (doc.exists && doc.data()?['gridTiles'] != null) {
+        return List<Map<String, dynamic>>.from(doc.data()!['gridTiles']);
+      }
+      return null;
+    } catch (e) {
+      print('Firestore 그리드 불러오기 오류: $e');
+      return null;
+    }
+  }
 }
