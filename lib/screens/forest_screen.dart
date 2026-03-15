@@ -14,6 +14,7 @@ import '../services/firestore_service.dart';
 import '../models/grid_state.dart';
 import '../screens/grid_screen.dart';
 import '../screens/shop_screen.dart';
+import '../screens/settings_screen.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -278,7 +279,21 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
                       '🛍️ 상점',
                       style: TextStyle(color: Colors.white70),
                     ),
-                  ),                  
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const SettingsScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      '⚙️ 설정',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ),                   
                 ],
               ),
             ),
