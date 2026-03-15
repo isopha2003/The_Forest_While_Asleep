@@ -82,5 +82,69 @@ class AnimalData {
       rarity: AnimalRarity.legendary, minTreeStage: 4,
       weathers: ['snowy', 'foggy'], visitChance: 3, dewReward: 100,
     ),
+    // 계절 한정 동물
+    Animal(
+      id: 'spring_butterfly', emoji: '🦋', name: '봄나비',
+      rarity: AnimalRarity.rare, minTreeStage: 1,
+      weathers: ['sunny'], visitChance: 20, dewReward: 20,
+    ),
+    Animal(
+      id: 'beetle', emoji: '🪲', name: '장수풍뎅이',
+      rarity: AnimalRarity.common, minTreeStage: 1,
+      weathers: ['sunny'], visitChance: 50, dewReward: 5,
+    ),
+    Animal(
+      id: 'mushroom_fairy', emoji: '🍄', name: '버섯요정',
+      rarity: AnimalRarity.rare, minTreeStage: 2,
+      weathers: ['rainy'], visitChance: 20, dewReward: 25,
+    ),
+    Animal(
+      id: 'winter_deer', emoji: '🦌', name: '겨울사슴',
+      rarity: AnimalRarity.rare, minTreeStage: 2,
+      weathers: ['snowy'], visitChance: 15, dewReward: 30,
+    ),
+    // 날씨 특수 동물
+    Animal(
+      id: 'rainbow_bird', emoji: '🌈', name: '무지개새',
+      rarity: AnimalRarity.legendary, minTreeStage: 3,
+      weathers: ['sunny'], visitChance: 5, dewReward: 80,
+    ),
+    Animal(
+      id: 'storm_eagle', emoji: '🦅', name: '폭풍독수리',
+      rarity: AnimalRarity.rare, minTreeStage: 2,
+      weathers: ['thunderstorm'], visitChance: 25, dewReward: 35,
+    ),
+    Animal(
+      id: 'fog_wolf', emoji: '🐺', name: '안개늑대',
+      rarity: AnimalRarity.legendary, minTreeStage: 3,
+      weathers: ['foggy'], visitChance: 6, dewReward: 80,
+    ),
+    Animal(
+      id: 'parrot', emoji: '🦜', name: '열대앵무',
+      rarity: AnimalRarity.common, minTreeStage: 4,
+      weathers: ['sunny'], visitChance: 40, dewReward: 8,
+    ),
+
+    // 야간 특수 동물
+    Animal(
+      id: 'bat', emoji: '🦇', name: '박쥐',
+      rarity: AnimalRarity.common, minTreeStage: 2,
+      weathers: ['clearNight'], visitChance: 55, dewReward: 5,
+    ),
+    Animal(
+      id: 'moon_rabbit', emoji: '🌙', name: '달토끼',
+      rarity: AnimalRarity.legendary, minTreeStage: 3,
+      weathers: ['clearNight'], visitChance: 4, dewReward: 90,
+    ),
+    Animal(
+      id: 'snow_owl', emoji: '🦉', name: '설원올빼미',
+      rarity: AnimalRarity.rare, minTreeStage: 2,
+      weathers: ['snowy'], visitChance: 18, dewReward: 30,
+    ),
+    Animal(
+      id: 'dragon', emoji: '🐉', name: '용',
+      rarity: AnimalRarity.legendary, minTreeStage: 4,
+      weathers: ['foggy'], visitChance: 2, dewReward: 150,
+    ),
   ];
 }
