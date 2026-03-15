@@ -54,6 +54,12 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       );
     }
 
+// 그리드 데이터 불러오기 추가
+final savedGrid = await FirestoreService.loadGridData();
+if (savedGrid != null) {
+  _gridState = GridState.fromMap(savedGrid);
+}
+
     final elapsed = await TimeService.getElapsedMinutes();
     await TimeService.saveCloseTime();
     final weather = await WeatherService.getWeatherType();
@@ -79,6 +85,8 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       discoveredAnimals: discoveredAnimals,
       lastSaved: _forestState.lastSaved,
     );
+    // 그리드 저장 추가
+    await FirestoreService.saveGridData(_gridState.tilesToMap());
 
     if (offlineDew > 0) {
       _showDew(offlineDew);
