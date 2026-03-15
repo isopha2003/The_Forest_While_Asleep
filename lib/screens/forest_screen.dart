@@ -10,6 +10,7 @@ import '../widgets/animal_popup.dart';
 import '../widgets/dew_popup.dart';
 import '../screens/collection_screen.dart';
 import '../services/notification_service.dart';
+import '../services/firestore_service.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -35,6 +36,19 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
 
   Future<void> _loadForest() async {
     print('=== _loadForest 호출됨 ===');
+
+    // Firestore에서 데이터 불러오기
+    final savedData = await FirestoreService.loadForestData();
+    if (savedData != null) {
+      _forestState = ForestState(
+        treeStage: savedData['treeStage'] ?? 0,
+        dewAmount: savedData['dewAmount'] ?? 0,
+        lastSaved: DateTime.parse(
+          savedData['lastSaved'] ?? DateTime.now().toIso8601String(),
+        ),
+      );
+    }
+
     final elapsed = await TimeService.getElapsedMinutes();
     await TimeService.saveCloseTime();
     final weather = await WeatherService.getWeatherType();
@@ -43,7 +57,6 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       weatherType: weather,
     );
 
-    // 오프라인 이슬 계산
     final offlineDew = elapsed ~/ 60;
 
     setState(() {
@@ -53,17 +66,24 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       _isLoading = false;
     });
 
-    // 오프라인 이슬 팝업
+    // Firestore에 저장
+    final discoveredAnimals = await AnimalService.getDiscoveredAnimals();
+    await FirestoreService.saveForestData(
+      treeStage: _forestState.treeStage,
+      dewAmount: _forestState.dewAmount,
+      discoveredAnimals: discoveredAnimals,
+      lastSaved: _forestState.lastSaved,
+    );
+
     if (offlineDew > 0) {
       _showDew(offlineDew);
     }
 
-    // 동물 이슬 보상
     if (animals.isNotEmpty) {
       NotificationService.showAnimalVisitNotification(
-          animalName: animals.first.name,
-          animalEmoji: animals.first.emoji,
-        );
+        animalName: animals.first.name,
+        animalEmoji: animals.first.emoji,
+      );
       final totalDew = animals.fold(0, (sum, a) => sum + a.dewReward);
       Future.delayed(const Duration(milliseconds: 500), () {
         setState(() {
@@ -77,6 +97,7 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       });
     }
   }
+
 
   void _showDew(int amount) {
     setState(() {
