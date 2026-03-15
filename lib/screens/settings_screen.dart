@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '../screens/shop_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -69,7 +70,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           const SizedBox(height: 24),
-
+          _buildSectionTitle('상점'),
+          _buildButtonItem(
+            emoji: '🛍️',
+            title: '상점 열기',
+            subtitle: '아이템 구매 및 광고 제거',
+            color: const Color(0xFF95D5B2),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ShopScreen()),
+            ),
+          ),
+          const SizedBox(height: 24),
           // 게임 정보
           _buildSectionTitle('게임 정보'),
           _buildInfoItem(emoji: '🌲', title: '앱 이름', value: '잠든 사이 숲'),

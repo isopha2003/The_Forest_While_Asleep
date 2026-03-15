@@ -310,26 +310,18 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       body: screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          if (index == 3) {
-            // 상점은 별도 화면으로 열기
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ShopScreen()),
-            );
-            return;
-          }
-          setState(() => _currentIndex = index);
-        },
+        onTap: (index) => setState(() => _currentIndex = index),
         backgroundColor: const Color(0xFF1B4332),
         selectedItemColor: const Color(0xFF95D5B2),
         unselectedItemColor: Colors.white38,
         type: BottomNavigationBarType.fixed,
+        selectedFontSize: 11,
+        unselectedFontSize: 11,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.forest), label: '숲'),
           BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: '내 숲'),
           BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: '도감'),
-          BottomNavigationBarItem(icon: Icon(Icons.store), label: '상점'),
+          BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: '기록'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: '설정'),
         ],
       ),
