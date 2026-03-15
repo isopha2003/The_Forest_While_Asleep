@@ -65,10 +65,10 @@ class FirestoreService {
   // 그리드 데이터 저장
   static Future<void> saveGridData(List<Map<String, dynamic>> tiles) async {
     try {
-      await _db.collection(_collection).doc(_docId).update({
+      await _db.collection(_collection).doc(_docId).set({
         'gridTiles': tiles,
         'updatedAt': FieldValue.serverTimestamp(),
-      });
+      }, SetOptions(merge: true));
     } catch (e) {
       print('Firestore 그리드 저장 오류: $e');
     }

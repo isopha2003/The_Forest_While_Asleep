@@ -255,6 +255,7 @@ if (savedGrid != null) {
                             gridState: _gridState,
                             onGridChanged: (newGrid) {
                               setState(() => _gridState = newGrid);
+                              FirestoreService.saveGridData(newGrid.tilesToMap());
                             },
                             onDewSpent: (amount) {
                               setState(() {
