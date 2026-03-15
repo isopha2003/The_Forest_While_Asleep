@@ -28,10 +28,8 @@ class _ShopScreenState extends State<ShopScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              '구매 완료! 감사해요 🎉',
-              style: TextStyle(color: Colors.white),
-            ),
+            content: Text('구매 완료! 감사해요 🎉',
+              style: TextStyle(color: Colors.white)),
             backgroundColor: Color(0xFF1B4332),
           ),
         );
@@ -39,15 +37,14 @@ class _ShopScreenState extends State<ShopScreen> {
       onPurchaseError: (error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              '구매 오류: $error',
-              style: const TextStyle(color: Colors.white),
-            ),
+            content: Text('구매 오류: $error',
+              style: const TextStyle(color: Colors.white)),
             backgroundColor: Colors.red.shade900,
           ),
         );
       },
     );
+    // 에뮬레이터에서 isAvailable이 false여도 로딩 종료
     setState(() => _isLoading = false);
   }
 

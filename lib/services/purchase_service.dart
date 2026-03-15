@@ -25,28 +25,30 @@ class PurchaseService {
     required Function(PurchaseDetails) onPurchaseSuccess,
     required Function(String) onPurchaseError,
   }) async {
-    isAvailable = await _iap.isAvailable();
-    if (!isAvailable) return;
+    try {
+      isAvailable = await _iap.isAvailable();
+      if (!isAvailable) return;
 
-    // 구매 스트림 구독
-    _subscription = _iap.purchaseStream.listen(
-      (purchases) {
-        for (final purchase in purchases) {
-          if (purchase.status == PurchaseStatus.purchased ||
-              purchase.status == PurchaseStatus.restored) {
-            _iap.completePurchase(purchase);
-            onPurchaseSuccess(purchase);
-          } else if (purchase.status == PurchaseStatus.error) {
-            onPurchaseError(purchase.error?.message ?? '구매 오류');
+      _subscription = _iap.purchaseStream.listen(
+        (purchases) {
+          for (final purchase in purchases) {
+            if (purchase.status == PurchaseStatus.purchased ||
+                purchase.status == PurchaseStatus.restored) {
+              _iap.completePurchase(purchase);
+              onPurchaseSuccess(purchase);
+            } else if (purchase.status == PurchaseStatus.error) {
+              onPurchaseError(purchase.error?.message ?? '구매 오류');
+            }
           }
-        }
-      },
-      onError: (e) => onPurchaseError(e.toString()),
-    );
+        },
+        onError: (e) => onPurchaseError(e.toString()),
+      );
 
-    // 상품 정보 불러오기
-    final response = await _iap.queryProductDetails(_productIds);
-    products = response.productDetails;
+      final response = await _iap.queryProductDetails(_productIds);
+      products = response.productDetails;
+    } catch (e) {
+      print('인앱 결제 초기화 오류 (에뮬레이터에서는 정상): $e');
+    }
   }
 
   // 구매하기
