@@ -13,6 +13,7 @@ import '../services/notification_service.dart';
 import '../services/firestore_service.dart';
 import '../models/grid_state.dart';
 import '../screens/grid_screen.dart';
+import '../screens/shop_screen.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
