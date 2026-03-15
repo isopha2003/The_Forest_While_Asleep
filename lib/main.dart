@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/forest_screen.dart';
 import 'services/notification_service.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +17,7 @@ void main() async {
   } catch (e) {
     print('Firebase 초기화 오류: $e');
   }
+  tz.initializeTimeZones();
   await NotificationService.init();
 
   runApp(

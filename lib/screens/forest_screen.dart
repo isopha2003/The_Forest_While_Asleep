@@ -121,6 +121,8 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
     final canCheckIn = await RetentionService.canCheckIn();
     if (canCheckIn) {
       final result = await RetentionService.checkIn();
+      // 매일 아침 알림 등록
+      await NotificationService.scheduleDailyCheckIn();
       setState(() {
         _checkInStreak = result['streak'] ?? 1;
         _checkInDewReward = result['dewReward'] ?? 10;
