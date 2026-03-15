@@ -264,6 +264,20 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
                       '🌲 내 숲 보기',
                       style: TextStyle(color: Colors.white70),
                     ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ShopScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      '🛍️ 상점',
+                      style: TextStyle(color: Colors.white70),
+                    ),
                   ),                  
                 ],
               ),
