@@ -8,17 +8,17 @@ import '../services/animal_service.dart';
 import '../widgets/tree_widget.dart';
 import '../widgets/animal_popup.dart';
 import '../widgets/dew_popup.dart';
+import '../widgets/check_in_popup.dart';
 import '../screens/collection_screen.dart';
-import '../services/notification_service.dart';
-import '../services/firestore_service.dart';
-import '../models/grid_state.dart';
 import '../screens/grid_screen.dart';
 import '../screens/shop_screen.dart';
 import '../screens/settings_screen.dart';
-import '../services/retention_service.dart';
-import '../widgets/check_in_popup.dart';
 import '../screens/scoreboard_screen.dart';
+import '../services/notification_service.dart';
+import '../services/firestore_service.dart';
+import '../services/retention_service.dart';
 import '../services/season_service.dart';
+import '../models/grid_state.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -28,7 +28,6 @@ class ForestScreen extends ConsumerStatefulWidget {
 }
 
 class _ForestScreenState extends ConsumerState<ForestScreen> {
-  Season _currentSeason = SeasonService.getCurrentSeason();
   bool _showCheckInPopup = false;
   int _checkInStreak = 0;
   int _checkInDewReward = 0;
@@ -40,6 +39,8 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
   List<Animal> _visitingAnimals = [];
   int _dewPopupAmount = 0;
   bool _showDewPopup = false;
+  Season _currentSeason = SeasonService.getCurrentSeason();
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -48,9 +49,6 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
   }
 
   Future<void> _loadForest() async {
-    print('=== _loadForest 호출됨 ===');
-
-    // Firestore에서 데이터 불러오기
     final savedData = await FirestoreService.loadForestData();
     if (savedData != null) {
       _forestState = ForestState(
@@ -62,7 +60,6 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       );
     }
 
-    // 그리드 데이터 불러오기 추가
     final savedGrid = await FirestoreService.loadGridData();
     if (savedGrid != null) {
       _gridState = GridState.fromMap(savedGrid);
@@ -85,7 +82,6 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       _isLoading = false;
     });
 
-    // Firestore에 저장
     final discoveredAnimals = await AnimalService.getDiscoveredAnimals();
     await FirestoreService.saveForestData(
       treeStage: _forestState.treeStage,
@@ -93,12 +89,9 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       discoveredAnimals: discoveredAnimals,
       lastSaved: _forestState.lastSaved,
     );
-    // 그리드 저장 추가
     await FirestoreService.saveGridData(_gridState.tilesToMap());
 
-    if (offlineDew > 0) {
-      _showDew(offlineDew);
-    }
+    if (offlineDew > 0) _showDew(offlineDew);
 
     if (animals.isNotEmpty) {
       NotificationService.showAnimalVisitNotification(
@@ -117,11 +110,10 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
         _showDew(totalDew);
       });
     }
-    // 출석 체크
+
     final canCheckIn = await RetentionService.canCheckIn();
     if (canCheckIn) {
       final result = await RetentionService.checkIn();
-      // 매일 아침 알림 등록
       await NotificationService.scheduleDailyCheckIn();
       setState(() {
         _checkInStreak = result['streak'] ?? 1;
@@ -135,7 +127,6 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       });
     }
   }
-
 
   void _showDew(int amount) {
     setState(() {
@@ -158,15 +149,8 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
     setState(() => _visitingAnimals = []);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF1B4332),
-        body: Center(child: CircularProgressIndicator(color: Colors.white)),
-      );
-    }
-
+  // 메인 숲 화면
+  Widget _buildForestTab() {
     final bgColor = Color(WeatherService.getBackgroundColor(_weatherType));
     final weatherDesc = WeatherService.getWeatherDescription(_weatherType);
 
@@ -179,214 +163,174 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // 계절 표시
-                  Text(
-                    '${SeasonService.getSeasonEmoji(_currentSeason)} ${SeasonService.getSeasonName(_currentSeason)}',
-                    style: const TextStyle(
-                      color: Colors.white54,
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 4),                  
-                  // 날씨 설명
-                  Text(
-                    weatherDesc,
-                    style: const TextStyle(
-                      color: Color(0xFF95D5B2),
-                      fontSize: 14,
-                    ),
+                  // 계절 + 날씨
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${SeasonService.getSeasonEmoji(_currentSeason)} ${SeasonService.getSeasonName(_currentSeason)}',
+                        style: const TextStyle(
+                          color: Colors.white54, fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        weatherDesc,
+                        style: const TextStyle(
+                          color: Color(0xFF95D5B2), fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 32),
-                  // 나무 애니메이션 위젯
                   TreeWidget(
                     stage: _forestState.treeStage,
                     onGrow: _onTreeGrow,
                   ),
                   const SizedBox(height: 24),
-                  // 성장 메시지
                   AnimatedOpacity(
                     opacity: _showGrowMessage ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 500),
                     child: const Text(
                       '🎉 나무가 성장했어요!',
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
+                        color: Colors.white, fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // 성장 단계
                   Text(
                     _forestState.stageName,
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
+                      color: Colors.white, fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // 이슬 보유량 (탭하면 이슬 팝업 테스트)
-                  GestureDetector(
-                    onTap: () => _showDew(10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white10,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('💧', style: TextStyle(fontSize: 18)),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${_forestState.dewAmount}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white10,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('💧', style: TextStyle(fontSize: 18)),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${_forestState.dewAmount}',
+                          style: const TextStyle(
+                            color: Colors.white, fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 40),
-                  // 날씨 새로고침 버튼
+                  const SizedBox(height: 24),
                   TextButton(
                     onPressed: _loadForest,
                     child: const Text(
                       '날씨 새로고침',
-                      style: TextStyle(color: Colors.white70),
+                      style: TextStyle(color: Colors.white54, fontSize: 13),
                     ),
                   ),
-                  // 도감 버튼
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const CollectionScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      '📖 동물 도감',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => GridScreen(
-                            forestState: _forestState,
-                            gridState: _gridState,
-                            onGridChanged: (newGrid) {
-                              setState(() => _gridState = newGrid);
-                              FirestoreService.saveGridData(newGrid.tilesToMap());
-                            },
-                            onDewSpent: (amount) {
-                              setState(() {
-                                _forestState = ForestState(
-                                  treeStage: _forestState.treeStage,
-                                  dewAmount: _forestState.dewAmount - amount,
-                                  lastSaved: _forestState.lastSaved,
-                                );
-                              });
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      '🌲 내 숲 보기',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ShopScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      '🛍️ 상점',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const SettingsScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      '⚙️ 설정',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ScoreboardScreen(
-                            forestState: _forestState,
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      '🏆 내 기록',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  ),                   
                 ],
               ),
             ),
           ),
-          // 이슬 획득 팝업
           if (_showDewPopup)
             Positioned(
-              bottom: 200,
-              left: 0,
-              right: 0,
+              bottom: 200, left: 0, right: 0,
               child: Center(
                 child: DewPopup(
                   amount: _dewPopupAmount,
                   onComplete: () {
-                    if (mounted) {
-                      setState(() => _showDewPopup = false);
-                    }
+                    if (mounted) setState(() => _showDewPopup = false);
                   },
                 ),
               ),
             ),
-          // 동물 방문 팝업
           if (_visitingAnimals.isNotEmpty)
             AnimalPopup(
               animals: _visitingAnimals,
               onClose: _closeAnimalPopup,
             ),
-          // 출석 체크 팝업
           if (_showCheckInPopup)
             CheckInPopup(
               streak: _checkInStreak,
               dewReward: _checkInDewReward,
               onClose: () => setState(() => _showCheckInPopup = false),
-            ),        
+            ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFF1B4332),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
+    final screens = [
+      _buildForestTab(),
+      GridScreen(
+        forestState: _forestState,
+        gridState: _gridState,
+        onGridChanged: (newGrid) {
+          setState(() => _gridState = newGrid);
+          FirestoreService.saveGridData(newGrid.tilesToMap());
+        },
+        onDewSpent: (amount) {
+          setState(() {
+            _forestState = ForestState(
+              treeStage: _forestState.treeStage,
+              dewAmount: _forestState.dewAmount - amount,
+              lastSaved: _forestState.lastSaved,
+            );
+          });
+        },
+      ),
+      const CollectionScreen(),
+      ScoreboardScreen(forestState: _forestState),
+      const SettingsScreen(),
+    ];
+
+    return Scaffold(
+      body: screens[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          if (index == 3) {
+            // 상점은 별도 화면으로 열기
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ShopScreen()),
+            );
+            return;
+          }
+          setState(() => _currentIndex = index);
+        },
+        backgroundColor: const Color(0xFF1B4332),
+        selectedItemColor: const Color(0xFF95D5B2),
+        unselectedItemColor: Colors.white38,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.forest), label: '숲'),
+          BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: '내 숲'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: '도감'),
+          BottomNavigationBarItem(icon: Icon(Icons.store), label: '상점'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '설정'),
         ],
       ),
     );
