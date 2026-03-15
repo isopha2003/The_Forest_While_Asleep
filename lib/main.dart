@@ -3,10 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'screens/forest_screen.dart';
 import 'services/notification_service.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+  try {
+    await Firebase.initializeApp().timeout(
+      const Duration(seconds: 10),
+      onTimeout: () => throw Exception('Firebase 초기화 타임아웃'),
+    );
+  } catch (e) {
+    print('Firebase 초기화 오류: $e');
+  }
   await NotificationService.init();
 
   runApp(

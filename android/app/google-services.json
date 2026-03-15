@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "345194340870",
+    "project_id": "sleeping-forest-a9e56",
+    "storage_bucket": "sleeping-forest-a9e56.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:345194340870:android:9bec4d041937e60f835987",
+        "android_client_info": {
+          "package_name": "com.example.sleeping_forest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAC2uzQ0iuMGDTe2YO4_kxltqcNoDYNEOw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
