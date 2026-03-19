@@ -19,6 +19,7 @@ import '../services/firestore_service.dart';
 import '../services/retention_service.dart';
 import '../services/season_service.dart';
 import '../models/grid_state.dart';
+import '../screens/mission_screen.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -282,29 +283,40 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       );
     }
 
-    final screens = [
-      _buildForestTab(),
-      GridScreen(
-        forestState: _forestState,
-        gridState: _gridState,
-        onGridChanged: (newGrid) {
-          setState(() => _gridState = newGrid);
-          FirestoreService.saveGridData(newGrid.tilesToMap());
-        },
-        onDewSpent: (amount) {
-          setState(() {
-            _forestState = ForestState(
-              treeStage: _forestState.treeStage,
-              dewAmount: _forestState.dewAmount - amount,
-              lastSaved: _forestState.lastSaved,
-            );
-          });
-        },
-      ),
-      const CollectionScreen(),
-      ScoreboardScreen(forestState: _forestState),
-      const SettingsScreen(),
-    ];
+  final screens = [
+    _buildForestTab(),
+    GridScreen(
+      forestState: _forestState,
+      gridState: _gridState,
+      onGridChanged: (newGrid) {
+        setState(() => _gridState = newGrid);
+        FirestoreService.saveGridData(newGrid.tilesToMap());
+      },
+      onDewSpent: (amount) {
+        setState(() {
+          _forestState = ForestState(
+            treeStage: _forestState.treeStage,
+            dewAmount: _forestState.dewAmount - amount,
+            lastSaved: _forestState.lastSaved,
+          );
+        });
+      },
+    ),
+    const CollectionScreen(),
+    MissionScreen(
+      onDewEarned: (amount) {
+        setState(() {
+          _forestState = ForestState(
+            treeStage: _forestState.treeStage,
+            dewAmount: _forestState.dewAmount + amount,
+            lastSaved: _forestState.lastSaved,
+          );
+        });
+      },
+    ),
+    ScoreboardScreen(forestState: _forestState),
+    const SettingsScreen(),
+  ];
 
     return Scaffold(
       body: screens[_currentIndex],
@@ -321,6 +333,7 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.forest), label: '숲'),
           BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: '내 숲'),
           BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: '도감'),
+          BottomNavigationBarItem(icon: Icon(Icons.task_alt), label: '미션'),
           BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: '기록'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: '설정'),
         ],

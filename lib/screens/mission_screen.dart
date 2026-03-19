@@ -173,7 +173,7 @@ class _MissionScreenState extends State<MissionScreen>
                     minHeight: 6,
                   ),
                 ),
-                const SizedBox(height(4),
+                const SizedBox(height: 4),
                 Text(
                   '${mission.currentCount}/${mission.targetCount}',
                   style: TextStyle(
