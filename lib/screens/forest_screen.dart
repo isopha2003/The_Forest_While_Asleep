@@ -20,6 +20,7 @@ import '../services/retention_service.dart';
 import '../services/season_service.dart';
 import '../models/grid_state.dart';
 import '../screens/mission_screen.dart';
+import '../services/mission_service.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -50,6 +51,10 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
   }
 
   Future<void> _loadForest() async {
+    // 날씨 새로고침 미션 업데이트
+    await MissionService.updateMission('daily_weather', 1);
+    // 로그인 미션 업데이트
+    await MissionService.updateMission('daily_login', 1);
     final savedData = await FirestoreService.loadForestData();
     if (savedData != null) {
       _forestState = ForestState(
