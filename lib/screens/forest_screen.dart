@@ -301,6 +301,21 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
 
   final screens = [
     _buildForestTab(),
+    TreeCardScreen(
+      dewAmount: _forestState.dewAmount,
+      onDewSpent: (amount) {
+        setState(() {
+          _forestState = ForestState(
+            treeStage: _forestState.treeStage,
+            dewAmount: _forestState.dewAmount - amount,
+            lastSaved: _forestState.lastSaved,
+          );
+        });
+      },
+      onCardEquipped: (card) {
+        setState(() => _equippedCard = card);
+      },
+    ),
     GridScreen(
       forestState: _forestState,
       gridState: _gridState,
@@ -332,21 +347,6 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
     ),
     ScoreboardScreen(forestState: _forestState),
     const SettingsScreen(),
-      TreeCardScreen(
-    dewAmount: _forestState.dewAmount,
-    onDewSpent: (amount) {
-      setState(() {
-        _forestState = ForestState(
-          treeStage: _forestState.treeStage,
-          dewAmount: _forestState.dewAmount - amount,
-          lastSaved: _forestState.lastSaved,
-        );
-      });
-    },
-    onCardEquipped: (card) {
-      setState(() => _equippedCard = card);
-    },
-  ),
   ];
 
     return Scaffold(
