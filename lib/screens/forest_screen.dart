@@ -51,8 +51,6 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
   }
 
   Future<void> _loadForest() async {
-    // 날씨 새로고침 미션 업데이트
-    await MissionService.updateMission('daily_weather', 1);
     // 로그인 미션 업데이트
     await MissionService.updateMission('daily_login', 1);
     final savedData = await FirestoreService.loadForestData();
@@ -239,7 +237,10 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
                   ),
                   const SizedBox(height: 24),
                   TextButton(
-                    onPressed: _loadForest,
+                    onPressed: () async {
+                      await MissionService.updateMission('daily_weather', 1);
+                      _loadForest();
+                    },
                     child: const Text(
                       '날씨 새로고침',
                       style: TextStyle(color: Colors.white54, fontSize: 13),
