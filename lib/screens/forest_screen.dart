@@ -21,6 +21,9 @@ import '../services/season_service.dart';
 import '../models/grid_state.dart';
 import '../screens/mission_screen.dart';
 import '../services/mission_service.dart';
+import '../screens/tree_card_screen.dart';
+import '../models/tree_card.dart';
+import '../services/tree_card_service.dart';
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -30,6 +33,7 @@ class ForestScreen extends ConsumerStatefulWidget {
 }
 
 class _ForestScreenState extends ConsumerState<ForestScreen> {
+  TreeCard? _equippedCard;
   bool _showCheckInPopup = false;
   int _checkInStreak = 0;
   int _checkInDewReward = 0;
@@ -48,6 +52,12 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
   void initState() {
     super.initState();
     _loadForest();
+    _loadEquippedCard();
+  }
+
+  Future<void> _loadEquippedCard() async {
+    final card = await TreeCardService.getEquippedCardData();
+    setState(() => _equippedCard = card);
   }
 
   Future<void> _loadForest() async {
@@ -322,6 +332,21 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
     ),
     ScoreboardScreen(forestState: _forestState),
     const SettingsScreen(),
+      TreeCardScreen(
+    dewAmount: _forestState.dewAmount,
+    onDewSpent: (amount) {
+      setState(() {
+        _forestState = ForestState(
+          treeStage: _forestState.treeStage,
+          dewAmount: _forestState.dewAmount - amount,
+          lastSaved: _forestState.lastSaved,
+        );
+      });
+    },
+    onCardEquipped: (card) {
+      setState(() => _equippedCard = card);
+    },
+  ),
   ];
 
     return Scaffold(
@@ -337,6 +362,7 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
         unselectedFontSize: 11,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.forest), label: '숲'),
+          BottomNavigationBarItem(icon: Icon(Icons.style), label: '카드'),
           BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: '내 숲'),
           BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: '도감'),
           BottomNavigationBarItem(icon: Icon(Icons.task_alt), label: '미션'),
