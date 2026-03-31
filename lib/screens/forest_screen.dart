@@ -465,6 +465,8 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
               lastSaved: _forestState.lastSaved,
             );
           });
+          // Firestore 저장 추가
+          FirestoreService.updateDewAmount(_forestState.dewAmount - amount);
         },
       ),
       const CollectionScreen(),

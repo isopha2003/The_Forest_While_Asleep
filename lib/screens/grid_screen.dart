@@ -102,9 +102,11 @@ class _GridScreenState extends State<GridScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                final newGrid = _gridState.plantTree(index);
+                final cost = _gridState.unlockCost;
+                final newGrid = _gridState.unlockTile(index);
                 setState(() => _gridState = newGrid);
                 widget.onGridChanged(newGrid);
+                widget.onDewSpent(cost);
               },
               child: const Text('심기', style: TextStyle(color: Color(0xFF95D5B2))),
             ),
