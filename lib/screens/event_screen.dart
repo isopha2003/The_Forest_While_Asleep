@@ -1,5 +1,4 @@
-lib/screens/event_screen.dart 열고 아래 코드 붙여넣어 주세요:
-dartimport 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../models/event.dart';
 
 class EventScreen extends StatelessWidget {

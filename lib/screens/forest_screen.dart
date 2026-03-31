@@ -24,6 +24,9 @@ import '../services/mission_service.dart';
 import '../screens/tree_card_screen.dart';
 import '../models/tree_card.dart';
 import '../services/tree_card_service.dart';
+import '../screens/event_screen.dart';
+import '../models/event.dart';
+
 
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
@@ -33,6 +36,7 @@ class ForestScreen extends ConsumerStatefulWidget {
 }
 
 class _ForestScreenState extends ConsumerState<ForestScreen> {
+  GameEvent? _currentEvent;
   TreeCard? _equippedCard;
   bool _showCheckInPopup = false;
   int _checkInStreak = 0;
@@ -61,6 +65,7 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
   }
 
   Future<void> _loadForest() async {
+    _currentEvent = EventData.getCurrentEvent();
     // 로그인 미션 업데이트
     await MissionService.updateMission('daily_login', 1);
     final savedData = await FirestoreService.loadForestData();
@@ -162,7 +167,132 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
   void _closeAnimalPopup() {
     setState(() => _visitingAnimals = []);
   }
+  Widget _buildMoreTab() {
+    return Scaffold(
+      backgroundColor: const Color(0xFF1B4332),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1B4332),
+        foregroundColor: Colors.white,
+        title: const Text('더보기'),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildMoreItem(
+            icon: Icons.style,
+            title: '나무 카드',
+            subtitle: '카드 수집 및 장착',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => TreeCardScreen(
+                  dewAmount: _forestState.dewAmount,
+                  onDewSpent: (amount) {
+                    setState(() {
+                      _forestState = ForestState(
+                        treeStage: _forestState.treeStage,
+                        dewAmount: _forestState.dewAmount - amount,
+                        lastSaved: _forestState.lastSaved,
+                      );
+                    });
+                  },
+                  onCardEquipped: (card) {
+                    setState(() => _equippedCard = card);
+                  },
+                ),
+              ),
+            ),
+          ),
+          _buildMoreItem(
+            icon: Icons.celebration,
+            title: '이벤트',
+            subtitle: '진행 중인 이벤트 확인',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const EventScreen()),
+            ),
+          ),
+          _buildMoreItem(
+            icon: Icons.emoji_events,
+            title: '내 기록',
+            subtitle: '점수 및 통계 확인',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ScoreboardScreen(forestState: _forestState),
+              ),
+            ),
+          ),
+          _buildMoreItem(
+            icon: Icons.store,
+            title: '상점',
+            subtitle: '아이템 구매 및 광고 제거',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ShopScreen()),
+            ),
+          ),
+          _buildMoreItem(
+            icon: Icons.settings,
+            title: '설정',
+            subtitle: '알림, 데이터 관리',
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildMoreItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white10,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: const Color(0xFF95D5B2), size: 24),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white, fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: Colors.white54, fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.white38, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
   // 메인 숲 화면
   Widget _buildForestTab() {
     final bgColor = Color(WeatherService.getBackgroundColor(_weatherType));
@@ -196,6 +326,22 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
                       ),
                     ],
                   ),
+                  if (_currentEvent != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white10,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        '${_currentEvent!.emoji} ${_currentEvent!.name} 진행 중!',
+                        style: const TextStyle(
+                          color: Color(0xFF95D5B2), fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 32),
                   TreeWidget(
                     stage: _forestState.treeStage,
@@ -299,55 +445,39 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       );
     }
 
-  final screens = [
-    _buildForestTab(),
-    TreeCardScreen(
-      dewAmount: _forestState.dewAmount,
-      onDewSpent: (amount) {
-        setState(() {
-          _forestState = ForestState(
-            treeStage: _forestState.treeStage,
-            dewAmount: _forestState.dewAmount - amount,
-            lastSaved: _forestState.lastSaved,
-          );
-        });
-      },
-      onCardEquipped: (card) {
-        setState(() => _equippedCard = card);
-      },
-    ),
-    GridScreen(
-      forestState: _forestState,
-      gridState: _gridState,
-      onGridChanged: (newGrid) {
-        setState(() => _gridState = newGrid);
-        FirestoreService.saveGridData(newGrid.tilesToMap());
-      },
-      onDewSpent: (amount) {
-        setState(() {
-          _forestState = ForestState(
-            treeStage: _forestState.treeStage,
-            dewAmount: _forestState.dewAmount - amount,
-            lastSaved: _forestState.lastSaved,
-          );
-        });
-      },
-    ),
-    const CollectionScreen(),
-    MissionScreen(
-      onDewEarned: (amount) {
-        setState(() {
-          _forestState = ForestState(
-            treeStage: _forestState.treeStage,
-            dewAmount: _forestState.dewAmount + amount,
-            lastSaved: _forestState.lastSaved,
-          );
-        });
-      },
-    ),
-    ScoreboardScreen(forestState: _forestState),
-    const SettingsScreen(),
-  ];
+    final screens = [
+      _buildForestTab(),
+      GridScreen(
+        forestState: _forestState,
+        gridState: _gridState,
+        onGridChanged: (newGrid) {
+          setState(() => _gridState = newGrid);
+          FirestoreService.saveGridData(newGrid.tilesToMap());
+        },
+        onDewSpent: (amount) {
+          setState(() {
+            _forestState = ForestState(
+              treeStage: _forestState.treeStage,
+              dewAmount: _forestState.dewAmount - amount,
+              lastSaved: _forestState.lastSaved,
+            );
+          });
+        },
+      ),
+      const CollectionScreen(),
+      MissionScreen(
+        onDewEarned: (amount) {
+          setState(() {
+            _forestState = ForestState(
+              treeStage: _forestState.treeStage,
+              dewAmount: _forestState.dewAmount + amount,
+              lastSaved: _forestState.lastSaved,
+            );
+          });
+        },
+      ),
+      _buildMoreTab(),
+    ];
 
     return Scaffold(
       body: screens[_currentIndex],
@@ -362,12 +492,10 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
         unselectedFontSize: 11,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.forest), label: '숲'),
-          BottomNavigationBarItem(icon: Icon(Icons.style), label: '카드'),
           BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: '내 숲'),
           BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: '도감'),
           BottomNavigationBarItem(icon: Icon(Icons.task_alt), label: '미션'),
-          BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: '기록'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '설정'),
+          BottomNavigationBarItem(icon: Icon(Icons.more_horiz), label: '더보기'),
         ],
       ),
     );
