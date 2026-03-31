@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/event.dart';
+import '../models/animal.dart';
 
 class EventScreen extends StatelessWidget {
   const EventScreen({super.key});
@@ -96,6 +97,10 @@ class EventScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: event.specialAnimals.map((id) {
+              final animal = AnimalData.all.firstWhere(
+                (a) => a.id == id,
+                orElse: () => AnimalData.all.first,
+              );
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Container(
@@ -107,7 +112,8 @@ class EventScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    id, style: const TextStyle(
+                    '${animal.emoji} ${animal.name}',
+                    style: const TextStyle(
                       color: Colors.white, fontSize: 11,
                     ),
                   ),

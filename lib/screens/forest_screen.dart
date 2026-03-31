@@ -117,6 +117,9 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
         animalName: animals.first.name,
         animalEmoji: animals.first.emoji,
       );
+      // 동물 미션 업데이트 추가
+      await MissionService.updateMission('daily_animal', 1);
+      await MissionService.updateMission('weekly_animals', animals.length);
       final totalDew = animals.fold(0, (sum, a) => sum + a.dewReward);
       Future.delayed(const Duration(milliseconds: 500), () {
         setState(() {
