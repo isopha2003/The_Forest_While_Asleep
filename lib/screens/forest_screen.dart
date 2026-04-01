@@ -95,11 +95,17 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
     final offlineDew = elapsed ~/ 60;
 
     setState(() {
-      _forestState = _forestState.applyElapsedTime(elapsed);
-      _weatherType = weather;
-      _visitingAnimals = animals;
-      _isLoading = false;
+      _checkInStreak = result['streak'] ?? 1;
+      _checkInDewReward = result['dewReward'] ?? 10;
+      _forestState = ForestState(
+        treeStage: _forestState.treeStage,
+        dewAmount: _forestState.dewAmount + (result['dewReward'] ?? 10),
+        lastSaved: _forestState.lastSaved,
+      );
+      _showCheckInPopup = true;
     });
+    // Firestore 저장 추가
+    FirestoreService.updateDewAmount(_forestState.dewAmount);
 
     final discoveredAnimals = await AnimalService.getDiscoveredAnimals();
     await FirestoreService.saveForestData(
@@ -130,6 +136,8 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
           );
         });
         _showDew(totalDew);
+        // Firestore 저장 추가
+        FirestoreService.updateDewAmount(_forestState.dewAmount);
       });
     }
 
@@ -483,7 +491,6 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       ),
       _buildMoreTab(),
     ];
-
     return Scaffold(
       body: screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
