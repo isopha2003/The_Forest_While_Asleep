@@ -27,7 +27,6 @@ import '../services/tree_card_service.dart';
 import '../screens/event_screen.dart';
 import '../models/event.dart';
 
-
 class ForestScreen extends ConsumerStatefulWidget {
   const ForestScreen({super.key});
 
@@ -95,17 +94,11 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
     final offlineDew = elapsed ~/ 60;
 
     setState(() {
-      _checkInStreak = result['streak'] ?? 1;
-      _checkInDewReward = result['dewReward'] ?? 10;
-      _forestState = ForestState(
-        treeStage: _forestState.treeStage,
-        dewAmount: _forestState.dewAmount + (result['dewReward'] ?? 10),
-        lastSaved: _forestState.lastSaved,
-      );
-      _showCheckInPopup = true;
+      _forestState = _forestState.applyElapsedTime(elapsed);
+      _weatherType = weather;
+      _visitingAnimals = animals;
+      _isLoading = false;
     });
-    // Firestore 저장 추가
-    FirestoreService.updateDewAmount(_forestState.dewAmount);
 
     final discoveredAnimals = await AnimalService.getDiscoveredAnimals();
     await FirestoreService.saveForestData(
@@ -127,34 +120,38 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
       await MissionService.updateMission('daily_animal', 1);
       await MissionService.updateMission('weekly_animals', animals.length);
       final totalDew = animals.fold(0, (sum, a) => sum + a.dewReward);
-      Future.delayed(const Duration(milliseconds: 500), () {
+      Future.delayed(const Duration(milliseconds: 500), () async {
+        final newDew = _forestState.dewAmount + totalDew;
         setState(() {
           _forestState = ForestState(
             treeStage: _forestState.treeStage,
-            dewAmount: _forestState.dewAmount + totalDew,
+            dewAmount: newDew,
             lastSaved: _forestState.lastSaved,
           );
         });
         _showDew(totalDew);
-        // Firestore 저장 추가
-        FirestoreService.updateDewAmount(_forestState.dewAmount);
+        // 변경된 이슬 값으로 Firestore 저장
+        await FirestoreService.updateDewAmount(newDew);
       });
     }
 
     final canCheckIn = await RetentionService.canCheckIn();
     if (canCheckIn) {
-      final result = await RetentionService.checkIn();
+      final checkInResult = await RetentionService.checkIn();
       await NotificationService.scheduleDailyCheckIn();
+      final streak = checkInResult['streak'] ?? 1;
+      final dewReward = (checkInResult['dewReward'] ?? 10) as int;
       setState(() {
-        _checkInStreak = result['streak'] ?? 1;
-        _checkInDewReward = result['dewReward'] ?? 10;
+        _checkInStreak = streak;
+        _checkInDewReward = dewReward;
         _forestState = ForestState(
           treeStage: _forestState.treeStage,
-          dewAmount: _forestState.dewAmount + (result['dewReward'] ?? 10),
+          dewAmount: _forestState.dewAmount + dewReward,
           lastSaved: _forestState.lastSaved,
         );
         _showCheckInPopup = true;
       });
+      FirestoreService.updateDewAmount(_forestState.dewAmount);
     }
   }
 
