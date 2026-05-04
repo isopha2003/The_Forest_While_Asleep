@@ -94,7 +94,11 @@ class _ForestScreenState extends ConsumerState<ForestScreen> {
     final offlineDew = elapsed ~/ 60;
 
     setState(() {
-      _forestState = _forestState.applyElapsedTime(elapsed);
+      _forestState = ForestState(
+        treeStage: 2, // 임시로 2단계
+        dewAmount: _forestState.applyElapsedTime(elapsed).dewAmount,
+        lastSaved: DateTime.now(),
+      );
       _weatherType = weather;
       _visitingAnimals = animals;
       _isLoading = false;

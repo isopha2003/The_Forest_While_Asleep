@@ -54,7 +54,7 @@ class FirestoreService {
   // 이슬 양만 업데이트
   static Future<void> updateDewAmount(int amount) async {
     try {
-      await _db.collection(_collection).doc(_docId).update({
+      await _db.collection(_collection).doc(_docId).set({
         'dewAmount': amount,
         'updatedAt': FieldValue.serverTimestamp(),
       });

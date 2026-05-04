@@ -17,11 +17,13 @@ class AnimalService {
     final lastVisit = box.get(_lastVisitKey);
 
     // 마지막 방문 후 1시간 이상 지나야 새 동물 등장
+    /*
     if (lastVisit != null) {
       final lastTime = DateTime.parse(lastVisit);
       final elapsed = DateTime.now().difference(lastTime).inMinutes;
       if (elapsed < 60) return [];
     }
+    */
 
     final weatherName = weatherType.name;
     final random = Random();
